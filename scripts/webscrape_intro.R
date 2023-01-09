@@ -1,18 +1,26 @@
 library(rvest)
 
 
-
+# The landing page for the JMA search
 coll_pages = list()
 num_pages = 1:3
 #NEED TO FIX IMAGES AND LINKS TO ONLY APPLIED ARTS
 
 #"https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts"
-url <- "https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts&page="
+url <- "https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&page="
 coll_pages = paste0(url, num_pages)
 session_page <- session(coll_pages[1])
 
 collect_webpage = read_html(session_page)
 
+# If you just use the html you get way too many 176 elements we need to select by CSS selector
+# Use selector gadget for this also right click inspect to determine what was hidden
+elements = html_elements(collect_webpage,"a")
+
+# Run this and get some extras because of the hidden search memu
+#elements = html_elements(collect_webpage, ".mb-3 .lead a")
+#elements[29]
+#CHECK selector gadget says 29 not 24
 
 # Inspect page and see they are different h sections
 # ".mb-3 h3.lead a" is the CSS selector
@@ -32,15 +40,58 @@ for (webpage in coll_pages) {
   elements = html_elements(collect_webpage, ".mb-3 h3.lead a")
   pages = html_attr(elements, "href")
   all_pots = append(all_pots,pages)
-  Sys.sleep(1)
+  Sys.sleep(2)
   print(session_page)
   session_page = session_jump_to(session_page, webpage)
 }
 
 
 
+teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/71313")
+teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/201797")
+teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/76487")
+teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/76411")
+
+all_pots = list("https://data.fitzmuseum.cam.ac.uk/id/object/76487", "https://data.fitzmuseum.cam.ac.uk/id/object/17525", "https://data.fitzmuseum.cam.ac.uk/id/object/201797")
 
 
+gallery = html_elements(teapot, ".object-info")
+
+### Maker Information
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Maker(s)')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Maker(s)')]]"))
+### Title
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Title')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Title')]]"))
+### Description
+html_text2(html_element(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Description')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Description')]]"))
+### Categories
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Categories')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Categories')]]"))
+### identification Numbers
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Identification numbers')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Identification numbers')]]"))
+### Entities
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Entities')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Entities')]]"))
+
+### Dating
+html_text2(html_element(gallery,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'Dating')]]"))
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Dating')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Dating')]]"))
+###  Acquisition and important dates
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Acquisition and important dates')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Acquisition and important dates')]]"))
+### School or Style
+html_text2(html_elements(gallery,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'School or Style')]]"))
+style_text = html_element(gallery,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'School or Style')]]")
+### Materials used in production
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Materials used in production')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Materials used in production')]]"))
+
+
+# write.csv(d, "testing.csv",fileEncoding = "UTF-8")
 
 
 
@@ -86,7 +137,7 @@ for (pot in all_pots) {
     print(maker)
 
   } else {
-    if (length(maker)!=0) {
+    if (length(title)!=0) {
       maker = html_text2(maker)
       maker = gsub("\n", "|", maker)
       print(paste0(maker," Is Not Null"))
@@ -105,7 +156,7 @@ for (pot in all_pots) {
     print(id_numbers)
 
   } else {
-    if (length(id_numbers)!=0) {
+    if (length(title)!=0) {
       id_numbers = html_text2(id_numbers)
       id_numbers = gsub("\n", "|", id_numbers)
       print(paste0(id_numbers," Is Not Null"))
@@ -125,7 +176,7 @@ for (pot in all_pots) {
     print(category)
 
   } else {
-    if (length(category)!=0) {
+    if (length(title)!=0) {
       category = html_text2(category)
       category = gsub("\n", "|", category)
       print(paste0(category," Is Not Null"))
@@ -145,7 +196,7 @@ for (pot in all_pots) {
     print(entities)
 
   } else {
-    if (length(entities)!=0) {
+    if (length(title)!=0) {
       entities = html_text2(entities)
       entities = gsub("\n", "|", entities)
       print(paste0(entities," Is Not Null"))
@@ -165,7 +216,7 @@ for (pot in all_pots) {
     print(acqu_dates)
 
   } else {
-    if (length(acqu_dates)!=0) {
+    if (length(title)!=0) {
       acqu_dates = html_text2(acqu_dates)
       acqu_dates = gsub("\n", "|", acqu_dates)
       print(paste0(acqu_dates," Is Not Null"))
@@ -185,14 +236,14 @@ for (pot in all_pots) {
     print(description)
 
   } else {
-    if (length(description)!=0) {
+    if (length(title)!=0) {
       description = html_text2(description)
       description = gsub("\n", "|", description)
       print(description)
-      } else {
-        description = NA
-        print("no Description found")
-  }
+    } else {
+      description = NA
+      print("no Description found")
+    }
   }
   # Dating
   dating = html_element(obj_info,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'Dating')]]")
@@ -203,7 +254,7 @@ for (pot in all_pots) {
     print(dating)
 
   } else {
-    if (length(dating)!=0) {
+    if (length(title)!=0) {
       dating = html_text2(dating)
       dating = gsub("\n", "|", dating)
       print(dating)
@@ -221,7 +272,7 @@ for (pot in all_pots) {
     print(school)
 
   } else {
-    if (length(school)!=0) {
+    if (length(title)!=0) {
       school = html_text2(school)
       school = gsub("\n", "|", school)
       print(school)
@@ -241,7 +292,7 @@ for (pot in all_pots) {
     print(materials)
 
   } else {
-    if (length(materials)!=0) {
+    if (length(title)!=0) {
       materials = html_text2(materials)
       materials = gsub("\n", "|", materials)
       print(materials)
@@ -260,4 +311,3 @@ names(pottery)<- c("Title","Maker", "Identification_Numbers", "Categories",
                    "Entities", "Acquisition_and_Important_Dates", "Description",
                    "Dating", "School_or_Style", "Materials_Used_in_Production",
                    "Website")
-write.csv(pottery, "pottery.csv",fileEncoding = "UTF-8")
