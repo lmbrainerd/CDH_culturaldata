@@ -3,7 +3,7 @@ library(rvest)
 
 
 coll_pages = list()
-num_pages = 1:3
+num_pages = 1:255
 #NEED TO FIX IMAGES AND LINKS TO ONLY APPLIED ARTS
 
 #"https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts"
