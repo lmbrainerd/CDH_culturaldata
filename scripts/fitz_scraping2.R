@@ -3,7 +3,7 @@ library(rvest)
 
 
 coll_pages = list()
-num_pages = 1:10
+num_pages = 11:20
 #NEED TO FIX IMAGES AND LINKS TO ONLY APPLIED ARTS
 
 #"https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts"
@@ -189,10 +189,10 @@ for (pot in all_pots) {
       description = html_text2(description)
       description = gsub("\n", "|", description)
       print(description)
-      } else {
-        description = NA
-        print("no Description found")
-  }
+    } else {
+      description = NA
+      print("no Description found")
+    }
   }
   # Dating
   dating = html_element(obj_info,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'Dating')]]")
@@ -260,4 +260,4 @@ names(pottery)<- c("Title","Maker", "Identification_Numbers", "Categories",
                    "Entities", "Acquisition_and_Important_Dates", "Description",
                    "Dating", "School_or_Style", "Materials_Used_in_Production",
                    "Website")
-write.csv(pottery, "pottery.csv",fileEncoding = "UTF-8")
+write.csv(pottery, "pottery2.csv",fileEncoding = "UTF-8")
