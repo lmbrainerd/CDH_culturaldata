@@ -17,11 +17,200 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+R is a language. Remember this at all times. You do not learn languages in one day. Some people learn languages via apps. Some people learn languages with teachers in classes. Some people learn languages through immersion. Remember this is it feels challenging.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+This lesson on web-scraping is not going to leave you fluent in R. It is more like a repeat after me sing-along. It will teach you the words and show you how to say them and you will definitely understand how songs are sung after this but it doesn't mean you will be able to go and write your own song without help. If you want that, we recommend taking more classes on R.
+
+## R Basics
+
+R is a programming language designed for statistics and RStudio is a code editor (an IDE: integrated development environment) where you can work with R. This work assumes you already have them both installed as well as Google Chrome. 
+
+Let's start by opening up RStudio and covering some basics. Once you open RStudio (not R 4.2.1, or whatever version you have installed), there will be a window with three panes like this:
+
+![RStudio Initial Opening](images/rstudio_open.png) The left side has the console, where R code is run and all the magic happens. Top right is the Environment and history pane. These is where you will see the things you make when you run the code in the console. Bottom right shows multiple tabs including Plots (where graphs you make are shown) and Help (where you can search for manuals on any function you use).
+
+There is one more pane we need to add to this before we start. As you code, you want to keep track of all the code you write and execute. To do that, we create an R Script. An R Script is simply a text file that stores the commands (code) you run in the console. It is a journal, if you will. To open a new one, click the image of the white paper with the green plus symbol and select R Script from the drop down. A new window will appear in the top left with a blank page.
+
+## Saving
+
+Save your script in a folder you would like to work and name the file "webscrape.R". Avoid using spaces in your filenames when coding as often computers have problems with them. Use an underscore instead.
+
+## Objects
+
+In R, we work with data but how do we store that data. R stores information as 'objects'. Objects have a name, and can contain everything from a single number, a string of letters, a table of data or some program code. You can think of objects as containers. Containers can be file folders, filing cabinets, book shelves, tote bags, bin bags. They all store things in different ways. Thinking back to maths classes, we took long ago, objects are like the variables we use in formulas to solve equations. Like Pythagorean theorem: $a^2+b^2=c^2$, $a$, $b$, and $c$ are the variables/objects that we replace with information to get some answer.
+
+In R you assign a value to an object with `<-` or `=`. The hardest part of objects is naming them. There are numerous naming conventions, but the key is to not use spaces, do not start with numbers, and have them be meaningful. If your object is a list of information about teapots, name the object `teapot`.
+
+## Packages
+
+R comes with a lot of functionality built in everyything included in a fresh install of R is known as "base R". The best part of R is the add-ons called packages you can install within R. Packages contain functions and functions are how things get done in R. Functions are prebuilt code that can find the mean of some numbers to running complicated computer simulations thousands of times to simulate randomness. If you have used Excel, they are similar to excel functions in usage.
+
+For this work, we are only going to need one package, **rvest**. Let's install it now via coding. Copy the line below to your R script (the top left pane) and then, while your cursor is on the line (selected), press either the Run button in the top right of the script pane or **CTRL+ENTER**. This will run the line of code in the console pane below.
+
+```{r install_rvest, eval=FALSE}
+install.packages("rvest")
+
+```
+
+You will receive a message about the package being successfully 'unpacked' (installed). This simply installs the package on the computer, however, like computer applications you need to 'open' them to use them. To 'open' a package so we can use it, you load a package into your library, so R recognises the functions you are typing are the ones in this package. The first line in most scripts will be loading packages to your library, as they must be done everytime you work with R.
+
+```{r library, warning=FALSE}
+library(rvest)
+```
+
+# Webscrape Walkthrough
+
+This is the start of going through the webscraping example used in the workshop. Copy each line of code into your script in RStudio and run it using either the run button or CTRL+Enter while that line is selected. Try to understand what each line is doing when you run it. The complete code will be available at the end of the exercise.
+
+## Retrieving Links
+
+We start with a link to a webpage. In this case, the "url" (link or web address) is to the search results on the Fitzwilliam Museum's catelogue for the term "pottery" and filtered by department, "Applied Arts". 
+
+<https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts>
+
+Our goal is to go through all the pages available and find the links to each of the objects listed here that you would normally just click on to follow to the object collection page. 
+
+### Fetching Page
+
+Let's tackle th "all the pages available" part first as it is easy in this case. On the Fitzwilliam website, as you click the next button to go to the next page, the url changes slightly to add "page=2". If you edit the url and change the number 1 or 42 or 101, it will take you to that page. This means all we need to do to obtain all the pages is look at the number of pages there are and create links that change the "page=#" to a different number.
+
+Store the url as an object called **url**. Quotes tell R that object is to be treated as a string of characters. 
+```{r}
+url <- "https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts&page="
+```
+Next we create an object to store the page numbers for us. For sake of speed and your computer power, let's only pretend there are 3 pages. A colon between two numbers in R means give me all the numbers from this number to that number. 
+```{r}
+num_pages = 1:3
+```
+If you type, just the name of the object and run that, it will show you what is stored in the object in the console like so:
+```{r}
+num_pages
+```
+Use this technique to double check your work as you go and ensure something hasn't gone wrong along the way
+
+Now we combine the list of numbers with the url we have made using our first function. Functions follow the convention of `function_name()`. The function has "arguments", the data you need to give the function to do its purpose. In this case you give it the **url** object and the **num_pages** which it will take both and combine them together into one string of characters. 
+```{r}
+coll_pages <- paste0(url, num_pages)
+```
+```{r,echo=FALSE}
+coll_pages
+
+```
+We have all the links but it is much easier to start with just one and make sure we figure it out there first. Square brackets allow you to access the information within an object stored as a list or vector. So this gets us the first of the 3 url in `coll_pages`.
+```{r}
+page_one <- coll_pages[1]
+```
+```{r, echo=FALSE}
+page_one
+```
+
+With our url in hand, we need to fetch the HTML for the page. We are reading all the code that makes up the site page you saw in the workshop and storing it in an object with the function `read_html()` which only requires you give it a object that has a string of characters that can be read as a website url. 
+```{r}
+collect_webpage = read_html(page_one)
+```
+
+Step one: Complete! You have the code for a webpage on your computer!
+
+### Parsing Elements
+
+We have the code, now let's take it a part and find what we need shall we? For this we need to look at the code on the internet and find the element we need and its CSS selector. 
+
+Where is the link? Go back to the search results page. If you click, on the image of an object or the name, it takes you to the page for it, so we know that whatever code makes that up has to contain the link to the page. Just like if you make a hyperlink in a document you need to provide the url for it to work.
+
+Ensuring you are in Google Chrome, press CTRL+U on the results page and a new page will open with the page's source code. Press CTRL+F and type in the name of an object on this page. The image below shows the results for "Venus" 
+![Source Code Venus](images/source_code.png)
+The link stored in `<a>` is the same as the URL for the object page and what we need. As there are many `<a>` elements in the code how do we find the ones we need? We use a CSS selector. Don't worry about the code that makes up a CSS selector, just remember that it is basically a pointer to a bit of code. 
+
+We will use a tool called "Selector Gadget" to get the selector for this element. You can either add the Google Chrome Extension [here](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en) or follow the instructions on [this page](https://selectorgadget.com/) to use. 
+
+Assuming you installed the extension, on the results page, click the selector gadget extension symbol to activate it then click the name of one of the objects with the link. Like so: 
+![Selector Gadget 1](images/inspector.png)
+Next, click all the things you don't want to be selected, as shown below.
+
+![Selector Gadget 2](images/inspector2.png)
+![Selector Gadget 3](images/inspector3.png)
+Notice how with each deselection the CSS selector at the bottom of the screen changes. We end up with `".mb-3 .lead a"`. With this, it appears that only the titles are selected, but if you look at the number next to the clear button it will say 29. This is odd because there are only 24 objects on the page. In this case, there is a hidden menu messing with us. If you turn off selector gadget by pressing the extension button again, within the search box, open the "Filter your Search" menu. If you turn on select gadget and click one of the words, you will notice a similar selection of yellow boxes appear and 5+24 = 29. We have found our culprit. Only problem is you can't interact with anything else when in the "Filter your Search" menu and selector gadget. 
+![Inspect Hidden Menu](images/inspector_hidden_code.png)
+
+We need to know what each element is to add it to our CSS selector. We will use Google Chrome's inspect option. Right-click on an object name and click inspect from the menu.
+![Inspect Menu](images/inspect_menu.png)
+A pane will appear on the side of the screen. You will likely have `<a>` selected. If you hover on the level above you will see `<h3.lead>` has a similar space. Open the filter menu and inspect the "Department". It is similarly an `<a>` but if you hover over the level above, it is instead a `<h5.lead>`. 
+![Inspect Menu 2](images/inspect_menu2.png)
+![Inspect Menu 3](images/inspect_menu3.png)
+So, we want h3 not h5 and can add that to our selector to be `".mb-3 h3.lead a"`. With our selector in hand, we can run a function that will select all HTML elements from `collect_webpage` that match our selector. 
+```{r}
+elements = html_elements(collect_webpage, ".mb-3 h3.lead a")
+```
+Now we have all the elements with our page link. We need to retrieve them. If you go back to the source code we looked at in the beginning the url is stored as part of the element as `<a href=`. "href" is what is called an attribute of the element `<a>`. As well, the url is already in quotes, meaning it is a string of characters, and doesn't need to be cleaned to be understandable. 
+```{r attributes}
+pages = html_attr(elements, "href")
+head(pages)
+
+```
+The function head() allows you to look at the first 6 entries in an objects. 
+
+We now have all the links on one page of our results! Take a second to pat yourself on the back you have webscraped and that is worth a congratulations 
+
+### Storing Data & Automation
+But we must press forward and we don't just want one page we want all the pages (in this case 3 pages). We will now take the list of results pages we made `coll_pages` and the steps we used to retrieve the links and automate it. Through the power of loops!
+
+Loops are used to execute a group of instructions or a block of code multiple times, without writing it repeatedly. Picture a flowchart where it asks you a question and if you say yes you continue or if you say no it goes back to the beginning. These are loops. There are 3 types: For-Loops, While-Loops, and If-statements. We will be using For-loops and If-statements in this work. 
+
+For-loops are iterative (repeated in a sequence) conditional statements. They follow the form of `for (variable in vector) {}`. Picture this you have a bag of apples, some are green and some are red, you need to check the colour of each. You pick each apple out of the bag one at a time and say what colour it is until the bag is empty; for the apple in the bag, say the color:
+```{r, eval=FALSE}
+for (apple in bag) {
+  print(apple)
+}
+```
+
+While-loops are conditional statements that say that while a certain thing is true, do these instructions. While the apple is red, keep picking out apples from the bag. As soon as you draw a green apple, the loop stops.
+
+If-statements are conditional statements that you may have run across in math or any sort of work that involves logic. If-statements are TRUE/FALSE (called Boolean) conditions. If the apple is red, then eat the apple. It can also have an additional at the end called an Else-statement. Continuing on with apples. Otherwise (ELSE), say "I hate green apples!" 
+```{r, eval=FALSE}
+if(apple == "red"){
+  print("I am going to eat this apple")
+} else {
+  print("I hate green apples!")
+}
+```
+
+Back to our url links! We want to go through all the urls in `coll_pages` and extract the links. This is suited for a For-loop. For each page in the list of pages, get me the data. The lines with # are comments that are ignored by R when you run
+```{r web-forloop}
+# A new list for storing our links
+all_pots = list()
+
+for (webpage in coll_pages) {
+  # Fetch the webpage
+  collect_webpage = read_html(webpage)
+  # Collect the elements storing the links
+  elements = html_elements(collect_webpage, ".mb-3 h3.lead a")
+  # Get the attributes with the link
+  pages = html_attr(elements, "href")
+  # Add the links to the list
+  all_pots = append(all_pots,pages)
+  # Pause for 1 second before continuing
+  Sys.sleep(1)
+}
+```
+Most of this should be clear and once you run it, try `length(all_pots)`which should return 72 meaning there are 72 urls in the list. Let's cover the additional lines here. As the For-loop does the same steps every time, you need to make an object to store your results outside of the loop. We have made an empty list called `all_pots` to do that. Append() is a function that adds a new entry to your list. You give it the list and the thing you are adding to the list. Finally, Sys.sleep() tells the system to wait a moment before going again. As discussed in the workshop, this is to ensure you are not overloading the server. 
+
+Now to the objects!
+
+## Venus: Single Page Scrape
+
+Similar to retrieving the webpages, it is best to start a webscrape by using a known webpage, making sure everything works along the way then automating. 
+
+
+
+### Fetch Page & Parse Elements
+
+### Clean up data & SToring
+
+## Automation & What ifs
+
+## The End product
 
 ```{r cars}
 summary(cars)

@@ -2,9 +2,8 @@ library(rvest)
 
 
 
-coll_pages = list()
 num_pages = 1:255
-#NEED TO FIX IMAGES AND LINKS TO ONLY APPLIED ARTS
+
 
 #"https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts"
 url <- "https://data.fitzmuseum.cam.ac.uk/search/results?query=pottery&operator=AND&sort=desc&department=Applied%20Arts&page="
@@ -160,10 +159,10 @@ for (pot in all_pots) {
     }
 
     #  Acquisition and important dates
-    acqu_dates = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(),
-                               'Acquisition and important dates')]][1]/preceding-sibling::*
-                               [preceding-sibling::h3[contains(text(), 'Acquisition and
-                               important dates')]]")
+    acqu_dates = html_elements(gallery,xpath = "//h3[preceding-sibling::h3
+                               [contains(text(),'Acquisition and important dates')]]
+                               [1]/preceding-sibling::*[preceding-sibling::h3[contains
+                               (text(), 'Acquisition and important dates')]]")
 
     if (length(acqu_dates)>1) {
       acqu_dates = html_text2(acqu_dates)
