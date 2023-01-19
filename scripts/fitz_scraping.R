@@ -1,6 +1,6 @@
 library(rvest)
 
-
+start_time <- Sys.time()
 
 num_pages = 1:255
 
@@ -159,7 +159,7 @@ for (pot in all_pots) {
     }
 
     #  Acquisition and important dates
-    acqu_dates = html_elements(gallery,xpath = "//h3[preceding-sibling::h3
+    acqu_dates = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3
                                [contains(text(),'Acquisition and important dates')]]
                                [1]/preceding-sibling::*[preceding-sibling::h3[contains
                                (text(), 'Acquisition and important dates')]]")
@@ -273,3 +273,7 @@ names(pottery_complete)<- c("ID","Title","Maker", "Identification_Numbers", "Cat
                    "Dating", "School_or_Style", "Materials_Used_in_Production",
                    "Website")
 write.csv(pottery_complete, "pottery.csv",fileEncoding = "UTF-8")
+
+end_time <- Sys.time()
+final_time <- end_time - start_time
+print(paste0("Total time run:",final_time, " seconds"))

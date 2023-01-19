@@ -198,30 +198,140 @@ Most of this should be clear and once you run it, try `length(all_pots)`which sh
 
 Now to the objects!
 
-## Venus: Single Page Scrape
+## Fish Pipe: Single Page Scrape
 
-Similar to retrieving the webpages, it is best to start a webscrape by using a known webpage, making sure everything works along the way then automating. 
+Similar to retrieving the webpages, it is best to start a webscrape by using a known webpage, making sure everything works along the way then automating. I have chosen a page that contains all the information we are hoping to scrape; a wonderful pipe in the form of a fish: <https://data.fitzmuseum.cam.ac.uk/id/object/76905>
 
+Make sure you have selected what information you want prior to starting, as retrieving different types of data can be like miny puzzles in a bigger one and it can feel very frustrating to put most of the puzzle together and then be told you need to more the puzzle to a bigger table. Data plans are your friend. We are going to retrieve:  
 
+* Title
+* Maker(s)
+* Identification numbers
+* Categories
+* Entities
+* Acquisition and important dates
+* Description
+* Dating
+* School or Style
+* Materials used in production
+
+As well, we will add two final categories we want in our dataset: ID and website. ID is helpful so you have a unique number for each object and the website is for ease of use when checking data later.
+
+Before we continue we do need to think about the end product. In this case, we are preparing data to be used in Kumu. Kumu accepts data as a CSV (comma-separated values), which is the simplest form of spreadsheet. It allows for no formatting, just data. Kumu also says you can have multiple values in a cell but they have to be separated by "|" (vertical bar symbol).This in fact makes it easier for us as we know that the number of values varies for categories. Some objects have multiple dating periods or materials used in production. So we can just put them all in one cell rather than thinking about separating unknown numbers of values. 
+
+More questions and problems will arise as we go but that is enough to get us going.
 
 ### Fetch Page & Parse Elements
 
-### Clean up data & SToring
+We begin the same as before by taking our url and fetching the HTML. This time we will just directly add the url to the function as an argument.
+```{r}
+obj_page = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/76905")
+```
+We now want to find the elements that store all of the items we need. However, it appears to not be as simple as the last one. Elements are stored with very little information connected to them so many different elements appear under the same CSS selector. Play around with selector gadget to see what you get. 
+![Fish Pipe Selection](images/fish_pipe_select.png)
+
+To solve this, we select one element that stores all the object information first then we can work on our data.
+```{r}
+obj_info = html_elements(obj_page, ".object-info") 
+```
+Now here comes the difficult bit, do not be afraid as we will go over what it does, but we need to select for each element now containing the information and it is more complex than the first one. But remember it uses the same function we used before and same input. The function html_text2() takes the text for the elements given and formats it in a readable way. 
+```{r}
+title = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Title')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Title')]]")
+html_text2(title)
+```
+The argument `xpath=` is similar to CSS selector but for more complicated problems. In this case, when you look at the HTML for the title and most of the elements you want. the elements are not nested within each other but listed one after another. Visualise it as: 
+
+* Element 1
+  + Element 2
+  
+Versus: 
+
+* Element 1 
+* Element 2
+
+This means we need to use placement of the elements next to each other to find the ones we want. CSS selectors can do this in a way. For Description, the CSS selector is `.collection:nth-child(10)`.
+![Pipe Description Selection](images/pipe_description.png)
+nth-child(10) refers to the child element (HTML uses child and parents as terms to indicate relationships like a family tree) that is the tenth one down. But what if there is no title? 
+
+This [lovely sauce boat][https://data.fitzmuseum.cam.ac.uk/id/object/72197] does not have a title. The CSS selector for Description is `.collection:nth-child(8)` It is now the eighth child element down. So clearly, we cannot use the position number that CSS selectors give. There are many elements that may or may not be included in object data and could be multiple or only one, like Dating or School/Style. We need to use relative position based on the text in each element to parse out our data. 
+```{r, eval=FALSE}
+xpath = "//h3[preceding-sibling::h3[contains(text(), 'Title')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Title')]]")
+```
+Xpaths can give us relative position and this code translates: look for the element `<h3>` that contains the text "Title" and give us all the elements that follow it, but stop when you reach the next element `<h3>` that is after the element `<h3>` which is called "Title. A long complicated way to say "Give me what is between these two points". 
+
+With one done, we do much the similar steps for the rest of the categories.
+```{r}
+# Maker
+maker = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Maker(s)')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Maker(s)')]]")
+html_text2(maker)
+# Id Numbers
+id_numbers = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Identification numbers')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Identification numbers')]]")
+html_text2(id_numbers)
+# Category
+category = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Categories')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Categories')]]")
+html_text2(category)
+# Entities
+entities = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Entities')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Entities')]]")
+html_text2(entities)
+#  Acquisition and important dates
+acqu_dates = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(),'Acquisition and important dates')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Acquisition and important dates')]]")
+html_text2(acqu_dates)
+# Description
+description = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Description')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Description')]]")
+html_text2(description)
+# Dating
+dating = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Dating')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Dating')]]")
+html_text2(dating)
+# Entities
+entities = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Entities')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Entities')]]")
+html_text2(entities)
+# Materials used in production
+materials = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Materials used in production')]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Materials used in production')]]")
+html_text2(materials)
+
+```
+Next, we need to deal with the last missing element: School or Style. If you run the above code with it changed to 'School or Style', it returns an empty container. Going back to the code, it appears there is an additional `<a>` nested deeper.
+![School or Style Source](images/school_code.png)
+We will use a different function html_element() (with no 's') that selects a single element and an xpath that finds us the elements descended from (nested within), the `<p>` element that follows the `<h3>` with "School or Style" text.
+```{r}
+school = html_element(obj_info,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'School or Style')]]")
+html_text2(school)
+```
+
+We have retrieved all the elements we want from this one page. 
+
+Clean up our text with gsub 
 
 ## Automation & What ifs
+Automate using a for-loop again and a list outside to store our entries. 
+
+We aren't going run our for-loop yet. We need to talk about "What ifs". When you are running a webscraper, it is highly indiviudalised to the website you are dealing. The problems you come across will have to be handled one at a time and ass you do more webscraping you can anticipate some of them, but largely they are simply smalls puzzles to solve on you way to getting your code running. Thankfully I am not going to make you do the process of running your code until an error occurs. Instead, I am going to present you with some "what if this went wrong?" questions and how we solve them. 
+
+What if you aren't retrieving the element you need? While the xpath for dating worked on the page we used, it returned empty on too many others and checking the code resulted in showing that they are similar to the School or Style xpath, so we switch to that
+Dating
+What if a page doesn't exist? While you collected a url for all the objects, that doesn't mean all of them are actually working. In this case, we are going to a trycatch to run the read_html() and if it fails and results in an error. It will store it for us to look at and move on. 
+What if there are more than one elements returned? Often the description section is stored as separate elements. We can use a ifelse statment to check and fix. If the object length is greater than 1 then it will combine the text together. The else statment continues in the next question.
+What if there is no elements? Once we have checked for more than one element, we then can do another ifelse statement within the else statement for the previous. The if statement will cover, if there is just one normal element, and the else will cover if there are none returned, which will replace with NA values. 
+
+And that is it! These are repeated for all elements, which could be written more elegantly (aka shorter), but it does not matter and we understand it. 
+
+We finish by creating an id number by increasing the count for every time we go through the loop. 
+Then we take all our results and put it in a list then add it to our existing empty list. A list within a list. We finally remember to use sys.sleep() to add a second delay, before repeating. 
+
 
 ## The End product
 
-```{r cars}
-summary(cars)
-```
+Once the for-loop is complete and we have our list of lists. We are going to turn it into a data frame which is a type of object that is made up of rows and columns. We then give names to our data frame columns.And finally save it! 
 
-## Including Plots
+# Code availability & Warning
 
-You can also embed plots, for example:
+WARNING: If you increase the number of pages and objects you wish to scrape, please know that increases the length of the runtime. All 255 pages will take approximately 5.5 hours to run. 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+The full script today without the initial steps is available on moodle.
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+If you have any questions, contact Leah at lmb211@cam.ac.uk. 
+
+All code and outputs are available on Leah's Github: <https://github.com/lmbrainerd/CDH_culturaldata>
+
+Thanks to Simon Carrignon for the assistance and answering of silly questions. 
