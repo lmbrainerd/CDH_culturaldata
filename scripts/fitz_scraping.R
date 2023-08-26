@@ -37,15 +37,13 @@ for (webpage in coll_pages) {
 
 
 
-# Make an empty dataframe to add results to
-#pottery = data.frame()
+
 broken_pots = list()
 pottery = list()
 for (pot in all_pots) {
   #For each pottery page in the list of pottery pages, do these things to it
   #try catch
   #Read the HTML website for the pottery page
-  #entry_page = read_html(pot)
   entry_page = tryCatch({
     read_html(pot)
     },error = function(e){

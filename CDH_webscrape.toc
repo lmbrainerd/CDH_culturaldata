@@ -1,0 +1,15 @@
+\contentsline {section}{Introduction}{1}{section*.2}%
+\contentsline {subsection}{R Basics}{1}{section*.3}%
+\contentsline {subsection}{Saving}{2}{section*.4}%
+\contentsline {subsection}{Objects}{2}{section*.5}%
+\contentsline {subsection}{Packages}{3}{section*.6}%
+\contentsline {section}{Webscrape Walkthrough}{3}{section*.7}%
+\contentsline {subsection}{Retrieving Links}{3}{section*.8}%
+\contentsline {subsubsection}{Fetching Page}{3}{section*.9}%
+\contentsline {subsubsection}{Parsing Elements}{6}{section*.10}%
+\contentsline {subsubsection}{Storing Data \& Automation}{10}{section*.11}%
+\contentsline {subsection}{Fish Pipe: Single Page Scrape}{12}{section*.12}%
+\contentsline {subsubsection}{Fetch Page \& Parse Elements}{12}{section*.13}%
+\contentsline {subsection}{Automation \& What Ifs}{16}{section*.14}%
+\contentsline {subsection}{The End Product}{23}{section*.15}%
+\contentsline {section}{Code availability \& Warning}{24}{section*.16}%

@@ -51,6 +51,7 @@ teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/71313")
 teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/201797")
 teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/76487")
 teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/76411")
+teapot = read_html("https://data.fitzmuseum.cam.ac.uk/id/object/76905")
 
 all_pots = list("https://data.fitzmuseum.cam.ac.uk/id/object/76487", "https://data.fitzmuseum.cam.ac.uk/id/object/17525", "https://data.fitzmuseum.cam.ac.uk/id/object/201797")
 
@@ -86,6 +87,9 @@ html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(te
 ### School or Style
 html_text2(html_elements(gallery,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'School or Style')]]"))
 style_text = html_element(gallery,xpath = "//*/descendant::p[preceding-sibling::h3[contains(text(), 'School or Style')]]")
+#wrong xpath
+html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'School or Style')
+                         ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'School or Style')]]"))
 ### Materials used in production
 html_text2(html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Materials used in production')
                          ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Materials used in production')]]"))
@@ -207,7 +211,7 @@ for (pot in all_pots) {
   }
 
   #  Acquisition and important dates
-  acqu_dates = html_elements(obj_info,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Acquisition and important dates')
+  acqu_dates = html_elements(gallery,xpath = "//h3[preceding-sibling::h3[contains(text(), 'Acquisition and important dates')
   ]][1]/preceding-sibling::*[preceding-sibling::h3[contains(text(), 'Acquisition and important dates')]]")
 
   if (length(acqu_dates)>1) {
@@ -216,7 +220,7 @@ for (pot in all_pots) {
     print(acqu_dates)
 
   } else {
-    if (length(title)!=0) {
+    if (length(acqu)!=0) {
       acqu_dates = html_text2(acqu_dates)
       acqu_dates = gsub("\n", "|", acqu_dates)
       print(paste0(acqu_dates," Is Not Null"))
@@ -311,3 +315,5 @@ names(pottery)<- c("Title","Maker", "Identification_Numbers", "Categories",
                    "Entities", "Acquisition_and_Important_Dates", "Description",
                    "Dating", "School_or_Style", "Materials_Used_in_Production",
                    "Website")
+
+Uninstall.packages('rvest')
